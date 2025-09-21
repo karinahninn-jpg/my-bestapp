@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Math Challenge</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div class="splash-screen" id="splash-screen">
+    <div class="splash-content">
+      <h1>Math Challenge</h1>
+      <h2>Student Information</h2>
+      <p>Name: Khaing Hnin</p>
+      <p>ID: 240702402432</p>
+      <button class="start-btn" id="start-btn">Start Game</button>
+    </div>
+  </div>
+
+  <!-- Game Container -->
+  <div class="game-container" id="game-container">
+    <div class="back-button-container">
+      <button class="back-btn" id="back-btn">← Back</button>
+    </div>
+
+    <div class="header">
+      <div class="timer-container">Time: <span id="time">60</span>s</div>
+      <h1>Math Challenge</h1>
+      <p>Test your math skills!</p>
+    </div>
+
+    <div class="game-panel">
+      <div class="stats">
+        <div class="stat">
+          <h3 id="score">0</h3>
+          <p>Score</p>
+        </div>
+        <div class="stat">
+          <h3 id="level">1</h3>
+          <p>Level</p>
+        </div>
+        <div class="stat">
+          <h3 id="lives">3</h3>
+          <p>Lives</p>
+        </div>
+      </div>
+
+      <div class="question-container">
+        <div class="question" id="question">5 + 3 = ?</div>
+        <input
+          type="number"
+          class="answer-input"
+          id="answer"
+          placeholder="Your answer"
+        />
+        <div class="feedback" id="feedback"></div>
+
+        <div class="buttons">
+          <button class="submit-btn" id="submit">Submit</button>
+          <button class="next-btn" id="next">Next</button>
+          <button class="new-game" id="new-game">New Game</button>
+        </div>
+      </div>
+
+      <div class="instructions">
+        <h3>How to Play</h3>
+        <p>
+          Solve the math problems as quickly as you can. Each correct answer
+          gives you 10 points. After 5 correct answers, you'll advance to the
+          next level with harder problems. You have 3 lives - be careful, wrong
+          answers will cost you a life!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const splashScreen = document.getElementById("splash-screen");
+      const gameContainer = document.getElementById("game-container");
+      const startBtn = document.getElementById("start-btn");
+      const backBtn = document.getElementById("back-btn");
+      const questionElement = document.getElementById("question");
+      const answerInput = document.getElementById("answer");
+      const feedbackElement = document.getElementById("feedback");
+      const scoreElement = document.getElementById("score");
+      const levelElement = document.getElementById("level");
+      const livesElement = document.getElementById("lives");
+      const timeElement = document.getElementById("time");
+      const submitButton = document.getElementById("submit");
+      const nextButton = document.getElementById("next");
+      const newGameButton = document.getElementById("new-game");
+
+      let score = 0;
+      let level = 1;
+      let lives = 3;
+      let timeLeft = 60;
+      let correctAnswer;
+      let gameActive = false;
+      let timer;
+
+      // Start game from splash screen
+      startBtn.addEventListener("click", function () {
+        splashScreen.style.transform = "translateY(-100%)";
+        splashScreen.style.opacity = "0";
+
+        setTimeout(function () {
+          splashScreen.style.display = "none";
+          gameContainer.classList.add("active");
+          backBtn.classList.add("visible");
+          startGame();
+        }, 800);
+      });
+
+      // Back button functionality
+      backBtn.addEventListener("click", function () {
+        gameContainer.classList.remove("active");
+        backBtn.classList.remove("visible");
+
+        setTimeout(function () {
+          splashScreen.style.display = "flex";
+          splashScreen.style.transform = "translateY(0)";
+          splashScreen.style.opacity = "1";
+          resetGame();
+        }, 500);
+      });
+
+      // Start the game
+      function startGame() {
+        gameActive = true;
+        startTimer();
+        nextQuestion();
+      }
+
+      // Timer function
+      function startTimer() {
+        clearInterval(timer);
+        timeLeft = 60;
+        timeElement.textContent = timeLeft;
+
+        timer = setInterval(function () {
+          timeLeft--;
+          timeElement.textContent = timeLeft;
+
+          if (timeLeft <= 0) {
+            endGame();
+          }
+        }, 1000);
+      }
+
+      // Generate a math question based on level
+      function generateQuestion() {
+        let num1, num2, operator, operators;
+
+        if (level === 1) {
+          // Easy: addition and subtraction
+          operators = ["+", "-"];
+          num1 = Math.floor(Math.random() * 10) + 1;
+          num2 = Math.floor(Math.random() * 10) + 1;
+        } else if (level === 2) {
+          // Medium: multiplication
+          operators = ["×"];
+          num1 = Math.floor(Math.random() * 10) + 1;
+          num2 = Math.floor(Math.random() * 10) + 1;
+        } else {
+          // Hard: division and larger numbers
+          operators = ["÷"];
+          num2 = Math.floor(Math.random() * 10) + 1;
+          num1 = num2 * (Math.floor(Math.random() * 10) + 1);
+        }
+
+        operator = operators[Math.floor(Math.random() * operators.length)];
+
+        // Calculate correct answer
+        switch (operator) {
+          case "+":
+            correctAnswer = num1 + num2;
+            break;
+          case "-":
+            correctAnswer = num1 - num2;
+            break;
+          case "×":
+            correctAnswer = num1 * num2;
+            break;
+          case "÷":
+            correctAnswer = num1 / num2;
+            break;
+        }
+
+        questionElement.textContent = `${num1} ${operator} ${num2} = ?`;
+      }
+
+      // Check user's answer
+      function checkAnswer() {
+        if (!gameActive) return;
+
+        const userAnswer = parseInt(answerInput.value);
+
+        if (isNaN(userAnswer)) {
+          feedbackElement.textContent = "Please enter a number!";
+          feedbackElement.className = "feedback incorrect";
+          return;
+        }
+
+        if (userAnswer === correctAnswer) {
+          score += 10;
+          scoreElement.textContent = score;
+          feedbackElement.textContent = "Correct! Well done!";
+          feedbackElement.className = "feedback correct";
+
+          // Level up every 50 points
+          if (score % 50 === 0) {
+            level++;
+            levelElement.textContent = level;
+            feedbackElement.textContent += " Level up!";
+          }
+        } else {
+          lives--;
+          livesElement.textContent = lives;
+          feedbackElement.textContent = `Incorrect! The answer was ${correctAnswer}.`;
+          feedbackElement.className = "feedback incorrect";
+
+          if (lives <= 0) {
+            endGame();
+          }
+        }
+
+        submitButton.disabled = true;
+        nextButton.disabled = false;
+        answerInput.disabled = true;
+      }
+
+      // Setup next question
+      function nextQuestion() {
+        generateQuestion();
+        answerInput.value = "";
+        feedbackElement.textContent = "";
+        feedbackElement.className = "feedback";
+        submitButton.disabled = false;
+        nextButton.disabled = true;
+        answerInput.disabled = false;
+        answerInput.focus();
+      }
+
+      // End game
+      function endGame() {
+        gameActive = false;
+        clearInterval(timer);
+        feedbackElement.textContent = `Game Over! Your final score: ${score}`;
+        submitButton.disabled = true;
+        nextButton.disabled = true;
+        answerInput.disabled = true;
+      }
+
+      // Reset game
+      function resetGame() {
+        clearInterval(timer);
+        score = 0;
+        level = 1;
+        lives = 3;
+        scoreElement.textContent = score;
+        levelElement.textContent = level;
+        livesElement.textContent = lives;
+        gameActive = false;
+        submitButton.disabled = false;
+        nextButton.disabled = true;
+        answerInput.disabled = false;
+      }
+
+      // Start new game
+      function newGame() {
+        resetGame();
+        gameActive = true;
+        startTimer();
+        nextQuestion();
+      }
+
+      // Event listeners
+      submitButton.addEventListener("click", checkAnswer);
+      nextButton.addEventListener("click", nextQuestion);
+      newGameButton.addEventListener("click", newGame);
+
+      answerInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter" && submitButton.disabled === false) {
+          checkAnswer();
+        }
+      });
+
+      // Initialize buttons
+      nextButton.disabled = true;
+    });
+  </script>
+</body>
+</html>
