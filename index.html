@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Banking App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Green Banking</h1>
+            <p>Name - Khaing Hnin, ID - 240702402432</p>
+        </div>
+
+        <!-- Landing Screen -->
+        <div id="landing" class="screen active">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <i class="fas fa-leaf bank-icon"></i>
+            </div>
+            <p style="text-align:center; margin-bottom: 20px; color:#2e7d32; font-weight:500;">
+               Before you use this app, you need to create an account.<br>
+               If you already have an account, you can login.
+            </p>
+            <div class="input-group">
+                <button class="btn btn-primary" onclick="showScreen('login')">Login</button>
+            </div>
+            <div class="input-group">
+                <button class="btn btn-secondary" onclick="showScreen('register')">Create Account</button>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="login" class="screen">
+            <button class="back-btn" onclick="showScreen('landing')"><i class="fas fa-arrow-left"></i> Back</button>
+            <h2 style="margin-bottom: 20px; color: #2e7d32;">Login</h2>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="Your email">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Your password">
+            </div>
+            <div class="input-group">
+                <button class="btn btn-primary" onclick="login()">Login</button>
+            </div>
+            <div class="link">
+                No account? <a href="#" onclick="showScreen('register')">Register here</a>
+            </div>
+        </div>
+
+        <!-- Register Screen -->
+        <div id="register" class="screen">
+            <button class="back-btn" onclick="showScreen('landing')"><i class="fas fa-arrow-left"></i> Back</button>
+            <h2 style="margin-bottom: 20px; color: #2e7d32;">Register</h2>
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="regName" placeholder="Your name">
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="regEmail" placeholder="Your email">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" placeholder="Min. 6 characters">
+            </div>
+            <div class="input-group">
+                <button class="btn btn-primary" onclick="register()">Register</button>
+            </div>
+            <div class="link">
+                Have an account? <a href="#" onclick="showScreen('login')">Login here</a>
+            </div>
+        </div>
+
+        <!-- Banking Screen -->
+        <div id="banking" class="screen">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <div class="welcome-text" id="welcomeName">My Account</div>
+                    <div style="font-size: 0.9rem; color: #666;">Welcome to your banking dashboard</div>
+                </div>
+                <button class="btn btn-secondary" style="width: auto; padding: 10px 15px;" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="balance-card">
+                <h3>Current Balance</h3>
+                <div class="amount" id="balanceAmount">$0.00</div>
+                <div>Available Balance</div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="showScreen('deposit')"><i class="fas fa-arrow-down"></i> Deposit</button>
+                <button class="btn btn-secondary" onclick="showScreen('withdraw')"><i class="fas fa-arrow-up"></i> Withdraw</button>
+            </div>
+
+            <div style="margin-top: 25px;">
+                <h3 style="margin-bottom: 15px; color: #2e7d32;">Transaction History</h3>
+                <div id="transactions">
+                    <div class="transaction">
+                        <div>
+                            <div>No transactions yet</div>
+                            <div class="transaction-date">Start banking with us!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deposit Screen -->
+        <div id="deposit" class="screen">
+            <button class="back-btn" onclick="showScreen('banking')"><i class="fas fa-arrow-left"></i> Back</button>
+            <h2 style="margin-bottom: 20px; color: #2e7d32;">Deposit Money</h2>
+            <div class="input-group">
+                <label>Amount</label>
+                <input type="number" id="depositAmount" placeholder="Enter amount" min="1" step="0.01">
+            </div>
+            <div class="input-group">
+                <button class="btn btn-primary" onclick="doDeposit()"><i class="fas fa-check"></i> Deposit</button>
+            </div>
+        </div>
+
+        <!-- Withdraw Screen -->
+        <div id="withdraw" class="screen">
+            <button class="back-btn" onclick="showScreen('banking')"><i class="fas fa-arrow-left"></i> Back</button>
+            <h2 style="margin-bottom: 20px; color: #b455cc;">Withdraw Money</h2>
+            <div class="input-group">
+                <label>Amount</label>
+                <input type="number" id="withdrawAmount" placeholder="Enter amount" min="1" step="0.01">
+            </div>
+            <div class="input-group">
+                <button class="btn btn-primary" onclick="doWithdraw()"><i class="fas fa-check"></i> Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (!localStorage.users) localStorage.users = JSON.stringify([]);
+        if (!localStorage.currentUser) localStorage.currentUser = '';
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if (id === 'banking') updateUI();
+        }
+
+        function register() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!name || !email || !password || password.length < 6) {
+                alert('Please fill all fields correctly');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.users);
+            if (users.find(u => u.email === email)) {
+                alert('Email already registered');
+                return;
+            }
+
+            const newUser = { name, email, password, balance: 0, transactions: [] };
+            users.push(newUser);
+            localStorage.users = JSON.stringify(users);
+            localStorage.currentUser = email;
+
+            alert('Account created!');
+            showScreen('banking');
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const users = JSON.parse(localStorage.users);
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                alert('Invalid credentials');
+                return;
+            }
+
+            localStorage.currentUser = email;
+            showScreen('banking');
+        }
+
+        function logout() {
+            localStorage.currentUser = '';
+            showScreen('landing');
+        }
+
+        function getCurrentUser() {
+            const users = JSON.parse(localStorage.users);
+            return users.find(u => u.email === localStorage.currentUser);
+        }
+
+        function updateUser(user) {
+            const users = JSON.parse(localStorage.users);
+            const index = users.findIndex(u => u.email === user.email);
+            users[index] = user;
+            localStorage.users = JSON.stringify(users);
+        }
+
+        function updateUI() {
+            const user = getCurrentUser();
+            if (!user) return;
+
+            // Update welcome message with user's name
+            document.getElementById('welcomeName').textContent = user.name + "'s Account";
+            document.getElementById('balanceAmount').textContent = '$' + user.balance.toFixed(2);
+            
+            const transactionsDiv = document.getElementById('transactions');
+            transactionsDiv.innerHTML = user.transactions.length ? '' : `
+                <div class="transaction">
+                    <div>
+                        <div>No transactions yet</div>
+                        <div class="transaction-date">Start banking with us!</div>
+                    </div>
+                </div>
+            `;
+            
+            user.transactions.slice().reverse().forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'transaction';
+                div.innerHTML = `
+                    <div>
+                        <div><strong>${t.type}</strong></div>
+                        <div class="transaction-date">${new Date(t.date).toLocaleString()}</div>
+                    </div>
+                    <div class="transaction-amount ${t.type.toLowerCase()}">${t.type === 'Deposit' ? '+' : '-'}$${t.amount.toFixed(2)}</div>
+                `;
+                transactionsDiv.appendChild(div);
+            });
+        }
+
+        function doDeposit() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            if (!amount || amount <= 0) {
+                alert('Enter valid amount');
+                return;
+            }
+
+            const user = getCurrentUser();
+            user.balance += amount;
+            user.transactions.push({ type: 'Deposit', amount, date: new Date().toISOString() });
+
+            updateUser(user);
+            document.getElementById('depositAmount').value = '';
+            showScreen('banking');
+            alert('Deposit successful!');
+        }
+
+        function doWithdraw() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const user = getCurrentUser();
+
+            if (!amount || amount <= 0) {
+                alert('Enter valid amount');
+                return;
+            }
+
+            if (amount > user.balance) {
+                alert('Insufficient balance');
+                return;
+            }
+
+            user.balance -= amount;
+            user.transactions.push({ type: 'Withdraw', amount, date: new Date().toISOString() });
+
+            updateUser(user);
+            document.getElementById('withdrawAmount').value = '';
+            showScreen('banking');
+            alert('Withdrawal successful!');
+        }
+    </script>
+</body>
+</html>
